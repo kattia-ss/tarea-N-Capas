@@ -9,9 +9,6 @@ import java.util.UUID;
 @Getter
 public class CreatePostDto {
 
-    @NotNull
-    private UUID userId;
-
     @NotBlank
     @NotNull
     private String content;
