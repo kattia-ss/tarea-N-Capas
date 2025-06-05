@@ -27,6 +27,20 @@ public class UserService {
         userRepository.save(user);
     }
 
+    public User authenticate(String email, String password) {
+        Optional<User> optionalUser = userRepository.findUserByEmail(email);
+        if (optionalUser.isEmpty()) {
+            throw new RuntimeException("User not found");
+        }
+
+        User user = optionalUser.get();
+        if (!user.getPassword().equals(password)) { // En producción usar BCrypt
+            throw new RuntimeException("Invalid password");
+        }
+
+        return user;
+    }
+
     public User getUser(String id){
         UUID userId = UUID.fromString(id);
         Optional<User> optionalUser = userRepository.findById(userId);

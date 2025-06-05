@@ -23,8 +23,8 @@ public class PostService {
     @Autowired
     private UserRepository userRepository;
 
-    public void createPost(CreatePostDto request){
-        Optional<User> optionalUser = userRepository.findById(request.getUserId());
+    public void createPost(CreatePostDto request, UUID userId){
+        Optional<User> optionalUser = userRepository.findById(userId);
         if (optionalUser.isEmpty()){
             throw new RuntimeException("User not found");
         }
@@ -33,6 +33,8 @@ public class PostService {
         post.setAuthor(optionalUser.get());
         post.setMessage(request.getContent());
         post.setComments(new ArrayList<>());
+        post.setLikes(new ArrayList<>());
+        post.setDislikes(new ArrayList<>());
         postRepository.save(post);
     }
 
@@ -59,8 +61,73 @@ public class PostService {
         if (optionalPost.isEmpty()){
             throw new RuntimeException("Post not found");
         }
-        optionalPost.get().getLikes().add(optionalUser.get());
-        postRepository.save(optionalPost.get());
+
+        Post post = optionalPost.get();
+        User user = optionalUser.get();
+
+        post.getDislikes().remove(user);
+
+        if (!post.getLikes().contains(user)) {
+            post.getLikes().add(user);
+        }
+
+        postRepository.save(post);
+    }
+
+    public void dislikePost(UUID userId, UUID postId){
+        Optional<User> optionalUser = userRepository.findById(userId);
+        if (optionalUser.isEmpty()){
+            throw new RuntimeException("User not found");
+        }
+        Optional<Post> optionalPost = postRepository.findById(postId);
+        if (optionalPost.isEmpty()){
+            throw new RuntimeException("Post not found");
+        }
+
+        Post post = optionalPost.get();
+        User user = optionalUser.get();
+
+        post.getLikes().remove(user);
+
+        if (!post.getDislikes().contains(user)) {
+            post.getDislikes().add(user);
+        }
+
+        postRepository.save(post);
+    }
+
+    public void removeLike(UUID userId, UUID postId){
+        Optional<User> optionalUser = userRepository.findById(userId);
+        if (optionalUser.isEmpty()){
+            throw new RuntimeException("User not found");
+        }
+        Optional<Post> optionalPost = postRepository.findById(postId);
+        if (optionalPost.isEmpty()){
+            throw new RuntimeException("Post not found");
+        }
+
+        Post post = optionalPost.get();
+        User user = optionalUser.get();
+
+        post.getLikes().remove(user);
+        postRepository.save(post);
+    }
+
+    public void removeDislike(UUID userId, UUID postId){
+        Optional<User> optionalUser = userRepository.findById(userId);
+        if (optionalUser.isEmpty()){
+            throw new RuntimeException("User not found");
+        }
+        Optional<Post> optionalPost = postRepository.findById(postId);
+        if (optionalPost.isEmpty()){
+            throw new RuntimeException("Post not found");
+        }
+
+        Post post = optionalPost.get();
+        User user = optionalUser.get();
+
+        post.getDislikes().remove(user);
+        postRepository.save(post);
     }
 
     public List<Post> getLikedPosts(UUID userId){
@@ -71,4 +138,11 @@ public class PostService {
         return optionalUser.get().getLikes();
     }
 
+    public List<Post> getDislikedPosts(UUID userId){
+        Optional<User> optionalUser = userRepository.findById(userId);
+        if (optionalUser.isEmpty()){
+            throw new RuntimeException("User not found");
+        }
+        return optionalUser.get().getDislikes();
+    }
 }

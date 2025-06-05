@@ -45,4 +45,12 @@ public class User {
     )
     private List<Post> likes;
 
+    @ManyToMany
+    @JoinTable(
+            name = "post_dislikes",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "post_id")
+    )
+    private List<Post> dislikes;
+
 }
